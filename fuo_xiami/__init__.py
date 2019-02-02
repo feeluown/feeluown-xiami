@@ -94,6 +94,7 @@ class Xiami(object):
             self._app.ui.left_panel.my_music_con.show()
             self._app.ui.left_panel.playlists_con.show()
             self._app.my_music.clear()
+
             def func():
                 self._app.ui.table_container.show_songs(self._user.fav_songs)
             self._app.my_music.add(MyMusicItem(
