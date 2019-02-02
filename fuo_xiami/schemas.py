@@ -60,7 +60,8 @@ class SongSchema(Schema):
 
     # XXX: 这里暂时用 singerVOs 来表示歌曲的 artist，即使虾米接口中
     # 也会包含歌曲 artistVOs 信息
-    artists = fields.List(fields.Nested(ArtistSchema), load_from='singerVOs', required=True)
+    artists = fields.List(
+            fields.Nested(ArtistSchema), load_from='singerVOs', required=True)
 
     album_id = fields.Int(load_from='albumId', required=True)
     album_name = fields.Str(load_from='albumName', required=True)
