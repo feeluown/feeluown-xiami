@@ -43,18 +43,21 @@ def load_user():
 class Xiami(object):
     """GUI 控制"""
 
-    def __init__(self, app):
-        from feeluown.components.provider import ProviderModel
+    instance = None
 
+    def __init__(self, app):
         self._app = app
         self._user = None
 
-        self._pm = ProviderModel(
-            name='虾米音乐',
-            icon='♩ ',
-            desc='',
-            on_click=self.show_provider)
-        self._app.providers.assoc(provider.identifier, self._pm)
+        self._pm = self._app.pvd_uimgr.create_item(
+            name=provider.identifier,
+            text='虾米音乐',
+            symbol='♩ ',
+            desc='')
+        self._pm.clicked.connect(self.show_provider)
+        self._app.pvd_uimgr.add_item(self._pm)
+
+        Xiami.instance = self
 
     def show_login_dialog(self):
         from .ui import LoginDialog
@@ -68,6 +71,9 @@ class Xiami(object):
         self._user = user
         provider.auth(user)
 
+    def show_fav_songs(self):
+        self._app.ui.table_container.show_songs(self._user.fav_songs)
+
     def show_provider(self):
         """展示虾米首页
 
@@ -75,8 +81,6 @@ class Xiami(object):
 
         TODO: 可以考虑支持展示榜单等
         """
-        from feeluown.components.my_music import MyMusicItem
-
         if self._user is None:
             user = load_user()
             if user is None:
@@ -85,26 +89,25 @@ class Xiami(object):
                 self.bind_user(user, dump=False)
         if self._user is not None:
             # 显示用户名
-            self._pm.name = '虾米音乐 - {}'.format(self._user.name)
+            self._pm.text = '虾米音乐 - {}'.format(self._user.name)
             # 显示播放列表/歌单
-            self._app.playlists.clear()
-            self._app.playlists.add(self._user.playlists)
-            self._app.playlists.add(self._user.fav_playlists, is_fav=True)
+            self._app.pl_uimgr.clear()
+            self._app.pl_uimgr.add(self._user.playlists)
+            self._app.pl_uimgr.add(self._user.fav_playlists, is_fav=True)
             # 显示用户收藏的歌曲
             self._app.ui.left_panel.my_music_con.show()
             self._app.ui.left_panel.playlists_con.show()
-            self._app.my_music.clear()
+            self._app.mymusic_uimgr.clear()
 
-            def func():
-                self._app.ui.table_container.show_songs(self._user.fav_songs)
-            self._app.my_music.add(MyMusicItem(
-                '♥ 我的收藏', on_click=func))
+            mymusic_fav_item = self._app.mymusic_uimgr.create_item('♥ 我的收藏')
+            mymusic_fav_item.clicked.connect(self.show_fav_songs)
+            self._app.mymusic_uimgr.add_item(mymusic_fav_item)
 
 
 def enable(app):
     app.library.register(provider)
     if app.mode & app.GuiMode:
-        Xiami(app)
+        app.__ui_ctl = Xiami(app)
 
 
 def disable(app):
