@@ -3,10 +3,11 @@
 ## 安装
 
 ```sh
-pip3 install fuo_xiami
+pip3 install fuo-xiami
 ```
 
-## 开发
+## changelog
 
-1. clone 代码
-2. 运行测试 `pytest`
+### 0.1 (2019-03-18)
+
+- 用户登录，歌曲/歌手/专辑详情获取等基本功能
