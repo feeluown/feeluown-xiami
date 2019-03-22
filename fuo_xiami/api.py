@@ -79,7 +79,7 @@ class API(object):
         m_h5_tk = self._cookies['_m_h5_tk']
         self._req_token, _ = m_h5_tk.split('_')
 
-    def request(self, action, payload, timeout=3):
+    def request(self, action, payload, timeout=3, retry_on_tokenexpired=True):
         """
         虾米 API 请求流程：
 
@@ -103,6 +103,9 @@ class API(object):
             raise RuntimeError('Xiami api app id and key not match.')
         elif code == 'FAIL_SYS_TOKEN_EXOIRED':  # 刷新 token
             self._fetch_token()
+            if retry_on_tokenexpired:
+                return self.request(action, payload, timeout=timeout,
+                                    retry_on_tokenexpired=False)
         elif code == 'FAIL_BIZ_GLOBAL_NEED_LOGIN':
             # TODO: 单独定义一个 Exception
             raise RuntimeError('Xiami api need access token.')
