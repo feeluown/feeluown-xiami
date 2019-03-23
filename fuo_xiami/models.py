@@ -114,7 +114,7 @@ class XArtistModel(ArtistModel, XBaseModel):
             page_size = int(paging['pageSize'])
             count = int(paging['count'])
             num = 0
-            while num <= count:
+            while num < count:
                 data_songs = data['songs']
                 for data_song in data_songs:
                     yield _deserialize(data_song, NestedSongSchema)
