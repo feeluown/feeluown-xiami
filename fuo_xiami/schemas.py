@@ -56,7 +56,7 @@ class SongSchema(Schema):
     duration = fields.Str(load_from='length', missing='0')
 
     url = fields.Str(load_from='listenFile', missing='')
-    # files = fields.List(fields.Dict, load_from='listenFiles', missing=[])
+    files = fields.List(fields.Dict, load_from='listenFiles', missing=[])
 
     # XXX: 这里暂时用 singerVOs 来表示歌曲的 artist，即使虾米接口中
     # 也会包含歌曲 artistVOs 信息
@@ -72,15 +72,31 @@ class SongSchema(Schema):
         album = XAlbumModel(identifier=data['album_id'],
                             name=data['album_name'],
                             cover=data['album_cover'])
-        # files = data['files']
+        files = data['files']
         # files = sorted(files, key=lambda f: f['quality'], reverse=True)
         # if files:
         #     url = files[0]['url']
         # else:
         #     url = ''  # 设置为空，代表这首歌没有合适的 url
+        if files:
+            sq = hd = sd = ld = None
+            for file in files:
+                listenFile = file.get('listenFile') or file.get('url')
+                if '740.xiami' in listenFile:
+                    sq = listenFile
+                if '320.xiami' in listenFile:#虾米有可能把音质为192的同时设为h和l 故根据quality字段判断不一定可靠，见'Heartbreaker - Some & Any'
+                    hd = listenFile
+                if '192.xiami' in listenFile:
+                    sd = listenFile
+                if '128.xiami' in listenFile:
+                    ld = listenFile
+            from fuocore.models import Media
+            url = Media(sq=sq, hd=hd, sd=sd, ld=ld).get_url(Media.Q.sq, Media.S.worse)# 音质选择策略
+        else:
+            url = ''  # 设置为空，代表这首歌没有合适的 url
         song = XSongModel(identifier=data['identifier'],
                           title=data['title'],
-                          url=data['url'],
+                          url=url,
                           duration=int(data['duration']),
                           album=album,
                           artists=data['artists'])
@@ -100,9 +116,25 @@ class NestedSongSchema(SongSchema):
     @post_load
     def create_model(self, data):
         song = super().create_model(data)
-        files = sorted(data['files'], key=lambda f: f['quality'], reverse=True)
+        files = data['files']
+        # files = sorted(data['files'], key=lambda f: f['quality'], reverse=True)
+        # if files:
+        #     url = files[0]['listenFile']
+        # else:
+        #     url = ''  # 设置为空，代表这首歌没有合适的 url
         if files:
-            url = files[0]['listenFile']
+            sq = hd = sd = ld = None
+            for file in files:
+                if '740.xiami' in file['listenFile']:
+                    sq = file['listenFile']
+                if '320.xiami' in file['listenFile']:
+                    hd = file['listenFile']
+                if '192.xiami' in file['listenFile']:
+                    sd = file['listenFile']
+                if '128.xiami' in file['listenFile']:
+                    ld = file['listenFile']
+            from fuocore.models import Media
+            url = Media(sq=sq, hd=hd, sd=sd, ld=ld).get_url(Media.Q.sq, Media.S.worse)# 音质选择策略
         else:
             url = ''  # 设置为空，代表这首歌没有合适的 url
         song.url = url
