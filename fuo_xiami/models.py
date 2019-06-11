@@ -33,6 +33,11 @@ def _deserialize(data, schema_cls):
 
 class XSongModel(SongModel, XBaseModel):
 
+    class Meta:
+        fields = ['q_url_mapping', 'expired_at']
+        fields_no_get = ['expired_at']
+        support_multi_quality = True
+
     @classmethod
     def get(cls, identifier):
         data = cls._api.song_detail(identifier)
@@ -40,9 +45,15 @@ class XSongModel(SongModel, XBaseModel):
             return None
         return _deserialize(data, SongSchema)
 
-    def _refresh_url(self):
+    def refresh_url(self):
         song = self.get(self.identifier)
         self.url = song.url
+        self.q_url_mapping = song.q_url_mapping
+        self.expired_at = song.expired_at
+
+    @property
+    def is_expired(self):
+        return self.expired_at is not None and time.time() >= self.expired_at
 
     @property
     def url(self):
@@ -70,6 +81,16 @@ class XSongModel(SongModel, XBaseModel):
     @lyric.setter
     def lyric(self, value):
         self._lyric = value
+
+    # multi quality support
+
+    def list_quality(self):
+        return list(self.q_url_mapping.keys())
+
+    def get_url(self, quality):
+        if self.is_expired:
+            self.refresh_url()
+        return self.q_url_mapping.get(quality)
 
 
 class XAlbumModel(AlbumModel, XBaseModel):
