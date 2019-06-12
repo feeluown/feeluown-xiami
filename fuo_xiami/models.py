@@ -59,7 +59,7 @@ class XSongModel(SongModel, XBaseModel):
     def url(self):
         if time.time() > self._expired_at:
             logger.debug('song({}) url is expired, refresh...'.format(self))
-            self._refresh_url()
+            self.refresh_url()
         return self._url
 
     @url.setter
