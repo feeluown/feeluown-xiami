@@ -1,7 +1,11 @@
 import logging
 import time
+from urllib.parse import urlparse
 
 from marshmallow import Schema, fields, post_load
+
+from fuocore.media import Media, AudioMeta
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +28,12 @@ class ListenFileSchema(Schema):
     """Song listenfile"""
     quality = fields.Str(required=True)
     url = fields.Str(load_from='listenFile', required=True)
+    format = fields.Str(required=True)
     # expire = fields.Str(required=True)
 
     @classmethod
-    def to_q_url_mapping(cls, lfiles):
-        q_url_mapping = {}
+    def to_q_media_mapping(cls, lfiles):
+        q_media_mapping = {}
         if lfiles:
             q_q_mapping = {'s': 'sq',
                            'h': 'hd',
@@ -38,13 +43,19 @@ class ListenFileSchema(Schema):
             for lfile in filter(lambda lfile: lfile['url'], lfiles):
                 url = lfile['url']
                 quality = lfile['quality']
+                format = lfile['format']
+                # url example: http://m720.xiami.net/...
+                try:
+                    bitrate = int(urlparse(url).netloc.split('.')[0][1:])
+                except:
+                    bitrate = None
                 if quality not in q_q_mapping:
                     field = 'ld'
                     logger.warning('unknown quality {}'.format(quality))
                 else:
                     field = q_q_mapping[quality]
-                q_url_mapping[field] = url
-        return q_url_mapping
+                q_media_mapping[field] = Media(url, format=format, bitrate=bitrate)
+        return q_media_mapping
 
 
 class AlbumSchema(Schema):
@@ -110,7 +121,7 @@ class SongSchema(Schema):
             url = files[0]['url']
         else:
             url = ''
-        q_url_mapping = ListenFileSchema.to_q_url_mapping(files)
+        q_media_mapping = ListenFileSchema.to_q_media_mapping(files)
         expire = int(time.time()) + 60 * 60
         song = XSongModel(identifier=data['identifier'],
                           title=data['title'],
@@ -118,7 +129,7 @@ class SongSchema(Schema):
                           duration=int(data['duration']),
                           album=album,
                           artists=data['artists'],
-                          q_url_mapping=q_url_mapping,
+                          q_media_mapping=q_media_mapping,
                           expired_at=expire,)
         return song
 

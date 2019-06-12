@@ -34,7 +34,7 @@ def _deserialize(data, schema_cls):
 class XSongModel(SongModel, XBaseModel):
 
     class Meta:
-        fields = ['q_url_mapping', 'expired_at']
+        fields = ['q_media_mapping', 'expired_at']
         fields_no_get = ['expired_at']
         support_multi_quality = True
 
@@ -48,7 +48,7 @@ class XSongModel(SongModel, XBaseModel):
     def refresh_url(self):
         song = self.get(self.identifier)
         self.url = song.url
-        self.q_url_mapping = song.q_url_mapping
+        self.q_media_mapping = song.q_media_mapping
         self.expired_at = song.expired_at
 
     @property
@@ -85,12 +85,12 @@ class XSongModel(SongModel, XBaseModel):
     # multi quality support
 
     def list_quality(self):
-        return list(self.q_url_mapping.keys())
+        return list(self.q_media_mapping.keys())
 
-    def get_url(self, quality):
+    def get_media(self, quality):
         if self.is_expired:
             self.refresh_url()
-        return self.q_url_mapping.get(quality)
+        return self.q_media_mapping.get(quality)
 
 
 class XAlbumModel(AlbumModel, XBaseModel):
