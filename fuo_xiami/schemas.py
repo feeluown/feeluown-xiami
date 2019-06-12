@@ -35,11 +35,11 @@ class ListenFileSchema(Schema):
     def to_q_media_mapping(cls, lfiles):
         q_media_mapping = {}
         if lfiles:
-            q_q_mapping = {'s': 'sq',
-                           'h': 'hd',
-                           'l': 'sd',
-                           'f': 'ld',
-                           'e': 'ld',}
+            q_q_mapping = {'s': 'shq',
+                           'h': 'hq',
+                           'l': 'sq',
+                           'f': 'lq',
+                           'e': 'lq',}
             for lfile in filter(lambda lfile: lfile['url'], lfiles):
                 url = lfile['url']
                 quality = lfile['quality']
@@ -50,7 +50,7 @@ class ListenFileSchema(Schema):
                 except:
                     bitrate = None
                 if quality not in q_q_mapping:
-                    field = 'ld'
+                    field = 'lq'
                     logger.warning('unknown quality {}'.format(quality))
                 else:
                     field = q_q_mapping[quality]
