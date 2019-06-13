@@ -1,4 +1,13 @@
+import logging
+import time
+from urllib.parse import urlparse
+
 from marshmallow import Schema, fields, post_load
+
+from fuocore.media import Media, AudioMeta
+
+
+logger = logging.getLogger(__name__)
 
 
 class ArtistSchema(Schema):
@@ -13,6 +22,40 @@ class ArtistSchema(Schema):
     @post_load
     def create_model(self, data):
         return XArtistModel(**data)
+
+
+class ListenFileSchema(Schema):
+    """Song listenfile"""
+    quality = fields.Str(required=True)
+    url = fields.Str(load_from='listenFile', required=True)
+    format = fields.Str(required=True)
+    # expire = fields.Str(required=True)
+
+    @classmethod
+    def to_q_media_mapping(cls, lfiles):
+        q_media_mapping = {}
+        if lfiles:
+            q_q_mapping = {'s': 'shq',
+                           'h': 'hq',
+                           'l': 'sq',
+                           'f': 'lq',
+                           'e': 'lq',}
+            for lfile in filter(lambda lfile: lfile['url'], lfiles):
+                url = lfile['url']
+                quality = lfile['quality']
+                format = lfile['format']
+                # url example: http://m720.xiami.net/...
+                try:
+                    bitrate = int(urlparse(url).netloc.split('.')[0][1:])
+                except:
+                    bitrate = None
+                if quality not in q_q_mapping:
+                    field = 'lq'
+                    logger.warning('unknown quality {}'.format(quality))
+                else:
+                    field = q_q_mapping[quality]
+                q_media_mapping[field] = Media(url, format=format, bitrate=bitrate)
+        return q_media_mapping
 
 
 class AlbumSchema(Schema):
@@ -56,7 +99,8 @@ class SongSchema(Schema):
     duration = fields.Str(load_from='length', missing='0')
 
     url = fields.Str(load_from='listenFile', missing='')
-    files = fields.List(fields.Dict, load_from='listenFiles', missing=[])
+    files = fields.List(
+        fields.Nested(ListenFileSchema), load_from='listenFiles', missing=[])
 
     # XXX: 这里暂时用 singerVOs 来表示歌曲的 artist，即使虾米接口中
     # 也会包含歌曲 artistVOs 信息
@@ -73,33 +117,20 @@ class SongSchema(Schema):
                             name=data['album_name'],
                             cover=data['album_cover'])
         files = data['files']
-        # files = sorted(files, key=lambda f: f['quality'], reverse=True)
-        # if files:
-        #     url = files[0]['url']
-        # else:
-        #     url = ''  # 设置为空，代表这首歌没有合适的 url
         if files:
-            sq = hd = sd = ld = None
-            for file in files:
-                listenFile = file.get('listenFile') or file.get('url')
-                if '740.xiami' in listenFile:
-                    sq = listenFile
-                if '320.xiami' in listenFile:#虾米有可能把音质为192的同时设为h和l 故根据quality字段判断不一定可靠，见'Heartbreaker - Some & Any'
-                    hd = listenFile
-                if '192.xiami' in listenFile:
-                    sd = listenFile
-                if '128.xiami' in listenFile:
-                    ld = listenFile
-            from fuocore.models import Media
-            url = Media(sq=sq, hd=hd, sd=sd, ld=ld).get_url(Media.Q.sq, Media.S.worse)# 音质选择策略
+            url = files[0]['url']
         else:
-            url = ''  # 设置为空，代表这首歌没有合适的 url
+            url = ''
+        q_media_mapping = ListenFileSchema.to_q_media_mapping(files)
+        expire = int(time.time()) + 60 * 60
         song = XSongModel(identifier=data['identifier'],
                           title=data['title'],
                           url=url,
                           duration=int(data['duration']),
                           album=album,
-                          artists=data['artists'])
+                          artists=data['artists'],
+                          q_media_mapping=q_media_mapping,
+                          expired_at=expire,)
         return song
 
 
@@ -111,33 +142,12 @@ class NestedSongSchema(SongSchema):
     search 接口得到的 Song 没有 listenFile 字段，但是可能会有 listenFiles 字段，
     有的话，取 listenFiles 中最高质量的播放链接作为音乐的 url。
     """
-    files = fields.List(fields.Dict, load_from='listenFiles', missing=[])
-
     @post_load
     def create_model(self, data):
         song = super().create_model(data)
         files = data['files']
-        # files = sorted(data['files'], key=lambda f: f['quality'], reverse=True)
-        # if files:
-        #     url = files[0]['listenFile']
-        # else:
-        #     url = ''  # 设置为空，代表这首歌没有合适的 url
         if files:
-            sq = hd = sd = ld = None
-            for file in files:
-                if '740.xiami' in file['listenFile']:
-                    sq = file['listenFile']
-                if '320.xiami' in file['listenFile']:
-                    hd = file['listenFile']
-                if '192.xiami' in file['listenFile']:
-                    sd = file['listenFile']
-                if '128.xiami' in file['listenFile']:
-                    ld = file['listenFile']
-            from fuocore.models import Media
-            url = Media(sq=sq, hd=hd, sd=sd, ld=ld).get_url(Media.Q.sq, Media.S.worse)# 音质选择策略
-        else:
-            url = ''  # 设置为空，代表这首歌没有合适的 url
-        song.url = url
+            song.url = files[0]['url']
         return song
 
 
