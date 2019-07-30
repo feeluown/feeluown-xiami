@@ -140,6 +140,21 @@ class API(object):
     # 搜索歌曲(1),专辑(10),歌手(100),歌单(1000)*(type)*
     def _search_songs(self, keywords, page, limit):
         action = 'mtop.alimusic.search.searchservice.searchsongs'
+        return self._search_action(action, keywords, page, limit)
+
+    def _search_albums(self, keywords, page, limit):
+        action = 'mtop.alimusic.search.searchservice.searchalbums'
+        return self._search_action(action, keywords, page, limit)
+
+    def _search_artists(self, keywords, page, limit):
+        action = 'mtop.alimusic.search.searchservice.searchartists'
+        return self._search_action(action, keywords, page, limit)
+
+    def _search_playlists(self, keywords, page, limit):
+        action = 'mtop.alimusic.search.searchservice.searchcollects'
+        return self._search_action(action, keywords, page, limit)
+
+    def _search_action(self, action, keywords, page, limit):
         payload = {
             'key': keywords,
             'pagingVO': {
