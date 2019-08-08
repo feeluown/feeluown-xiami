@@ -227,6 +227,22 @@ class API(object):
         code, msg, rv = self.request(action, payload)
         return rv['data']['data']['collectDetail']
 
+    def playlist_detail_v2(self, playlist_id, page=1, page_size=200):
+        """获取歌单详情
+
+        NOTE: 当设置 limit 大于 200 时，虾米服务端好像会忽略这个设置，将 limit 设为 200
+        """
+        action = 'mtop.alimusic.music.list.collectservice.getcollectsongs'
+        payload = {
+            'listId': playlist_id,
+            'pagingVO': {
+                'page': page,
+                'pageSize': page_size
+            }
+        }
+        code, msg, rv = self.request(action, payload)
+        return rv['data']['data']
+
     # 用户详情 用户歌单 用户收藏(歌曲 专辑 歌手 歌单)
     def user_detail(self, user_id):
         action = 'mtop.alimusic.xuser.facade.xiamiuserservice.getuserinfobyuserid'
@@ -262,7 +278,7 @@ class API(object):
         code, msg, rv = self.request(action, payload)
         return rv['data']['data']['collects']
 
-    def user_favorite_songs(self, user_id, page=1, limit=200):
+    def user_favorite_songs(self, user_id, page=1, page_size=200):
         """获取用户收藏的歌曲
 
         NOTE: 当设置 limit 大于 200 时，虾米服务端好像会忽略这个设置，将 limit 设为 20
@@ -272,12 +288,12 @@ class API(object):
             'userId': user_id,
             'pagingVO': {
                 'page': page,
-                'pageSize': limit
+                'pageSize': page_size
             }
         }
         code, msg, rv = self.request(action, payload)
         # TODO: 支持获取更多
-        return rv['data']['data']['songs']
+        return rv['data']['data']
 
     def update_favorite_song(self, song_id, op):
         """

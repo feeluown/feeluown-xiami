@@ -72,7 +72,7 @@ class Xiami(object):
         provider.auth(user)
 
     def show_fav_songs(self):
-        self._app.ui.table_container.show_songs(self._user.fav_songs)
+        self._app.ui.songs_table_container.show_songs(songs_g=self._user.fav_songs)
 
     def show_provider(self):
         """展示虾米首页

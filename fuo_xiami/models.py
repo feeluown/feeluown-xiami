@@ -153,6 +153,7 @@ class XPlaylistModel(PlaylistModel, XBaseModel):
 
     class Meta:
         fields = ('uid', )
+        allow_create_songs_g = True
 
     @classmethod
     def get(cls, identifier):
@@ -176,6 +177,23 @@ class XPlaylistModel(PlaylistModel, XBaseModel):
             if song.identifier == song_id:
                 self.songs.remove(song)
         return rv
+
+    def create_songs_g(self):
+        data = self._api.playlist_detail_v2(self.identifier, page=1)
+        if data is None:
+            yield from ()
+        else:
+            paging = data['pagingVO']
+            page = int(paging['page'])
+            page_size = int(paging['pageSize'])
+            pages = int(paging['pages'])
+            while page <= pages:
+                songs_data = data['songs']
+                for song_data in songs_data:
+                    yield _deserialize(song_data, NestedSongSchema)
+                page += 1
+                data = self._api.playlist_detail_v2(
+                    self.identifier, page=page, page_size=page_size)
 
 
 class XSearchModel(SearchModel, XBaseModel):
@@ -235,14 +253,22 @@ class XUserModel(UserModel, XBaseModel):
         FIXME: 支持获取所有的收藏歌曲
         """
         if self._fav_songs is None:
-            songs_data = self._api.user_favorite_songs(self.identifier)
-            self._fav_songs = []
-            if not songs_data:
-                return
-            for song_data in songs_data:
-                song = _deserialize(song_data, NestedSongSchema)
-                self._fav_songs.append(song)
-        return self._fav_songs
+            data = self._api.user_favorite_songs(self.identifier, page=1)
+            if data is None:
+                yield from ()
+            else:
+                paging = data['pagingVO']
+                page = int(paging['page'])
+                page_size = int(paging['pageSize'])
+                pages = int(paging['pages'])
+                while page <= pages:
+                    songs_data = data['songs']
+                    for song_data in songs_data:
+                        yield _deserialize(song_data, NestedSongSchema)
+                    page += 1
+                    data = self._api.user_favorite_songs(
+                        self.identifier, page=page, page_size=page_size)
+
 
     @fav_songs.setter
     def fav_songs(self, value):
