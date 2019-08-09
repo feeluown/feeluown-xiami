@@ -10,6 +10,17 @@ from fuocore.media import Media, AudioMeta
 logger = logging.getLogger(__name__)
 
 
+class MvSchema(Schema):
+    identifier = fields.Str(requried=True, load_from='mvId')
+    name = fields.Str(requried=True, load_from='title')
+    cover = fields.Str(requried=True, load_from='mvCover')
+    media = fields.Str(requried=True, load_from='mp4Url')
+
+    @post_load
+    def create_model(self, data):
+        return XMvModel(**data)
+
+
 class ArtistSchema(Schema):
     """歌手详情 Schema、歌曲歌手简要信息 Schema
     """
@@ -94,6 +105,7 @@ class SongSchema(Schema):
     ''
     """
     identifier = fields.Int(load_from='songId', required=True)
+    mvid = fields.Str(requried=True, load_from='mvId')
     title = fields.Str(load_from='songName', required=True)
     # FIXME: 有的歌曲没有 length 字段
     duration = fields.Str(load_from='length', missing='0')
@@ -124,6 +136,7 @@ class SongSchema(Schema):
         q_media_mapping = ListenFileSchema.to_q_media_mapping(files)
         expire = int(time.time()) + 60 * 60
         song = XSongModel(identifier=data['identifier'],
+                          mvid=data['mvid'],
                           title=data['title'],
                           url=url,
                           duration=int(data['duration']),
@@ -197,6 +210,7 @@ from .models import (
     XAlbumModel,
     XArtistModel,
     XPlaylistModel,
+    XMvModel,
     XSongModel,
     XSearchModel,
     XUserModel,

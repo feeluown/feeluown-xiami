@@ -4,6 +4,7 @@ import time
 from fuocore.models import (
     BaseModel,
     SongModel,
+    MvModel,
     AlbumModel,
     ArtistModel,
     PlaylistModel,
@@ -31,10 +32,21 @@ def _deserialize(data, schema_cls):
     return obj
 
 
+class XMvModel(MvModel, XBaseModel):
+
+    @classmethod
+    def get(cls, identifier):
+        data = cls._api.mv_detail(identifier)
+        if data is not None:
+            mv, _ = MvSchema(strict=True).load(data)
+            return mv
+        return None
+
+
 class XSongModel(SongModel, XBaseModel):
 
     class Meta:
-        fields = ['q_media_mapping', 'expired_at']
+        fields = ['mvid', 'q_media_mapping', 'expired_at']
         fields_no_get = ['expired_at']
         support_multi_quality = True
 
@@ -81,6 +93,23 @@ class XSongModel(SongModel, XBaseModel):
     @lyric.setter
     def lyric(self, value):
         self._lyric = value
+
+    @property
+    def mv(self):
+        if self._mv is not None:
+            return self._mv
+        # 这里可能会先获取一次 mvid
+        if self.mvid:
+            mv = XMvModel.get(self.mvid)
+            if mv is not None:
+                self._mv = mv
+                return self._mv
+        self.mvid = None
+        return None
+
+    @mv.setter
+    def mv(self, value):
+        self._mv = value
 
     # multi quality support
 
@@ -294,6 +323,7 @@ from .schemas import (
     ArtistSchema,
     PlaylistSchema,
     NestedSongSchema,
+    MvSchema,
     SongSchema,
     SongSearchSchema,
     UserSchema,
