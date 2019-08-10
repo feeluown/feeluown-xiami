@@ -10,6 +10,7 @@ from fuocore.models import (
     LyricModel,
     SearchModel,
     UserModel,
+    GeneratorProxy,
 )
 
 from .provider import provider
@@ -29,6 +30,29 @@ def _deserialize(data, schema_cls):
     schema = schema_cls(strict=True)
     obj, _ = schema.load(data)
     return obj
+
+
+def create_g(func, identifier, field='songs', schema=None):
+    if schema is None:
+        schema = NestedSongSchema
+    data = func(identifier, page=1)
+    total = int(data['total'])
+    def g():
+        nonlocal data
+        if data is None:
+            yield from ()
+        else:
+            paging = data['pagingVO']
+            page = int(paging['page'])
+            page_size = int(paging['pageSize'])
+            pages = int(paging['pages'])
+            while page <= pages:
+                obj_data_list = data[field]
+                for obj_data in obj_data_list:
+                    yield _deserialize(obj_data, schema)
+                page += 1
+                data = func(identifier, page, page_size)
+    return GeneratorProxy(g(), total)
 
 
 class XSongModel(SongModel, XBaseModel):
@@ -126,23 +150,7 @@ class XArtistModel(ArtistModel, XBaseModel):
         return self._songs
 
     def create_songs_g(self):
-        data = self._api.artist_songs(self.identifier, page=1)
-        if data is None:
-            yield from ()
-        else:
-            paging = data['pagingVO']
-            page = int(paging['page'])
-            page_size = int(paging['pageSize'])
-            count = int(paging['count'])
-            num = 0
-            while num < count:
-                data_songs = data['songs']
-                for data_song in data_songs:
-                    yield _deserialize(data_song, NestedSongSchema)
-                    num += 1
-                page += 1
-                data = self._api.artist_songs(
-                    self.identifier, page=page, page_size=page_size)
+        return create_g(self._api.artist_songs, self.identifier)
 
     @songs.setter
     def songs(self, value):
@@ -179,21 +187,7 @@ class XPlaylistModel(PlaylistModel, XBaseModel):
         return rv
 
     def create_songs_g(self):
-        data = self._api.playlist_detail_v2(self.identifier, page=1)
-        if data is None:
-            yield from ()
-        else:
-            paging = data['pagingVO']
-            page = int(paging['page'])
-            page_size = int(paging['pageSize'])
-            pages = int(paging['pages'])
-            while page <= pages:
-                songs_data = data['songs']
-                for song_data in songs_data:
-                    yield _deserialize(song_data, NestedSongSchema)
-                page += 1
-                data = self._api.playlist_detail_v2(
-                    self.identifier, page=page, page_size=page_size)
+        return create_g(self._api.playlist_detail_v2, self.identifier)
 
 
 class XSearchModel(SearchModel, XBaseModel):
@@ -249,30 +243,11 @@ class XUserModel(UserModel, XBaseModel):
 
     @property
     def fav_songs(self):
-        """
-        FIXME: 支持获取所有的收藏歌曲
-        """
-        if self._fav_songs is None:
-            data = self._api.user_favorite_songs(self.identifier, page=1)
-            if data is None:
-                yield from ()
-            else:
-                paging = data['pagingVO']
-                page = int(paging['page'])
-                page_size = int(paging['pageSize'])
-                pages = int(paging['pages'])
-                while page <= pages:
-                    songs_data = data['songs']
-                    for song_data in songs_data:
-                        yield _deserialize(song_data, NestedSongSchema)
-                    page += 1
-                    data = self._api.user_favorite_songs(
-                        self.identifier, page=page, page_size=page_size)
-
+        return create_g(self._api.user_favorite_songs, self.identifier)
 
     @fav_songs.setter
     def fav_songs(self, value):
-        self._fav_songs = value
+        pass
 
     def add_to_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'add')

@@ -278,7 +278,7 @@ class API(object):
         code, msg, rv = self.request(action, payload)
         return rv['data']['data']['collects']
 
-    def user_favorite_songs(self, user_id, page=1, page_size=200):
+    def user_favorite_songs(self, user_id, page=1, page_size=50):
         """获取用户收藏的歌曲
 
         NOTE: 当设置 limit 大于 200 时，虾米服务端好像会忽略这个设置，将 limit 设为 20
