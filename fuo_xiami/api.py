@@ -189,6 +189,13 @@ class API(object):
                 return lyric['content']
         return ''
 
+    def mv_detail(self, mv_id):
+        action = 'mtop.alimusic.music.mvservice.getmvdetail'
+        payload = {'mvId': mv_id}
+        _, _, rv = self.request(action, payload)
+        # 当 id 不存在时，rv['data']['data'] 为空字典
+        return rv['data']['data'].get('mvDetailVO')
+
     # 专辑详情 专辑评论
     def album_detail(self, album_id):
         action = 'mtop.alimusic.music.albumservice.getalbumdetail'

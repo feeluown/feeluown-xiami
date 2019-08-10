@@ -6,6 +6,7 @@ from fuocore.models import (
     SongModel,
     AlbumModel,
     ArtistModel,
+    MvModel,
     PlaylistModel,
     LyricModel,
     SearchModel,
@@ -36,13 +37,17 @@ def create_g(func, identifier, field='songs', schema=None):
     if schema is None:
         schema = NestedSongSchema
     data = func(identifier, page=1)
-    total = int(data['total'])
+    # user_favorite_songs 接口返回的数据有 total 字段，
+    # 但 playlist_detail_v2 接口返回的数据没有 total 字段，
+    # 这里取 pagingVO 结构体中的 count 字段值作为 total
+    total = int(data['pagingVO']['count'])
     def g():
         nonlocal data
         if data is None:
             yield from ()
         else:
             paging = data['pagingVO']
+            # pagingVO 结构体中字段是 string 类型
             page = int(paging['page'])
             page_size = int(paging['pageSize'])
             pages = int(paging['pages'])
@@ -55,10 +60,18 @@ def create_g(func, identifier, field='songs', schema=None):
     return GeneratorProxy(g(), total)
 
 
+class XMvModel(MvModel, XBaseModel):
+    @classmethod
+    def get(cls, identifier):
+        data = cls._api.mv_detail(identifier)
+        if data is not None:
+            return _deserialize(data, MvSchema)
+
+
 class XSongModel(SongModel, XBaseModel):
 
     class Meta:
-        fields = ['q_media_mapping', 'expired_at']
+        fields = ['mvid', 'q_media_mapping', 'expired_at']
         fields_no_get = ['expired_at']
         support_multi_quality = True
 
@@ -105,6 +118,22 @@ class XSongModel(SongModel, XBaseModel):
     @lyric.setter
     def lyric(self, value):
         self._lyric = value
+
+    @property
+    def mv(self):
+        if self._mv is not None:
+            return self._mv
+        # 这里可能会先获取一次 mvid
+        if self.mvid:
+            mv = XMvModel.get(self.mvid)
+            if mv is not None:
+                self._mv = mv
+                return self._mv
+        return None
+
+    @mv.setter
+    def mv(self, value):
+        self._mv = value
 
     # multi quality support
 
@@ -267,6 +296,7 @@ def search(keyword, **kwargs):
 from .schemas import (
     AlbumSchema,
     ArtistSchema,
+    MvSchema,
     PlaylistSchema,
     NestedSongSchema,
     SongSchema,
