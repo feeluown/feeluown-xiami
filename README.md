@@ -6,10 +6,15 @@
 pip3 install fuo-xiami
 ```
 
+## 开发
+
+注意：master 分支代码需要配合 FeelUOwn master 分支代码才可以使用。
+
 ## changelog
 ### 0.1.3 (WIP)
-- 支持获取播放列表全部的歌曲
-- 支持 Mv
+- 支持获取播放列表全部的歌曲 [@cyliuu] [@cosven]
+- 支持 Mv [@cyliuu] [@cosven]
+- 支持搜索 artists/albums/playlists [@hjlarry]
 
 ### 0.1.2 (2019-03-18)
 - 修复获取歌手歌曲时进入死循环
@@ -19,3 +24,8 @@ pip3 install fuo-xiami
 
 ### 0.1 (2019-03-18)
 - 用户登录，歌曲/歌手/专辑详情获取等基本功能
+
+
+[@hjlarry]: https://github.com/hjlarry
+[@cyliuu]: https://github.com/cyliuu
+[@cosven]: https://github.com/cosven
