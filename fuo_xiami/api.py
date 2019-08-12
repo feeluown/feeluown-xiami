@@ -137,9 +137,18 @@ class API(object):
             self.set_access_token(accessToken)
         return rv  # rv -> return value
 
-    # 搜索歌曲(1),专辑(10),歌手(100),歌单(1000)*(type)*
-    def _search_songs(self, keywords, page, limit):
-        action = 'mtop.alimusic.search.searchservice.searchsongs'
+    def search(self, keywords, type_=1, page=1, limit=30):
+        if type_ == 1:
+            action = 'mtop.alimusic.search.searchservice.searchsongs'
+        elif type_ == 10:
+            action = 'mtop.alimusic.search.searchservice.searchalbums'
+        elif type_ == 100:
+            action = 'mtop.alimusic.search.searchservice.searchartists'
+        elif type_ == 1000:
+            action = 'mtop.alimusic.search.searchservice.searchcollects'
+        else:
+            raise ValueError('invalid type_:%d', type_)
+
         payload = {
             'key': keywords,
             'pagingVO': {
@@ -147,20 +156,8 @@ class API(object):
                 'pageSize': limit
             }
         }
-        code, msg, rv = self.request(action, payload)
+        _, _, rv = self.request(action, payload)
         return rv['data']['data']
-
-    def search(self, keywords, type=1, page=1, limit=30):
-        if type == 1:
-            return self._search_songs(keywords, page, limit)
-        elif type == 10:
-            return self._search_albums(keywords, page, limit)
-        elif type == 100:
-            return self._search_artists(keywords, page, limit)
-        elif type == 1000:
-            return self._search_playlists(keywords, page, limit)
-        else:
-            return [], None
 
     def song_detail(self, song_id):
         action = 'mtop.alimusic.music.songservice.getsongdetail'

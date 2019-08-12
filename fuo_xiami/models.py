@@ -12,6 +12,7 @@ from fuocore.models import (
     SearchModel,
     UserModel,
     GeneratorProxy,
+    SearchType,
 )
 
 from .provider import provider
@@ -286,8 +287,15 @@ class XUserModel(UserModel, XBaseModel):
 
 
 def search(keyword, **kwargs):
-    data = provider.api.search(keyword, **kwargs)
-    schema = SongSearchSchema(strict=True)
+    type_ = SearchType.parse(kwargs['type_'])
+    type_type_map = {
+        SearchType.so: 1,
+        SearchType.al: 10,
+        SearchType.ar: 100,
+        SearchType.pl: 1000,
+    }
+    data = provider.api.search(keyword, type_=type_type_map[type_])
+    schema = SearchSchema(strict=True)
     result, _ = schema.load(data)
     result.q = keyword
     return result
@@ -300,6 +308,6 @@ from .schemas import (
     PlaylistSchema,
     NestedSongSchema,
     SongSchema,
-    SongSearchSchema,
+    SearchSchema,
     UserSchema,
 )  # noqa

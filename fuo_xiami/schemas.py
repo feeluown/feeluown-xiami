@@ -187,10 +187,12 @@ class PlaylistSchema(Schema):
         return XPlaylistModel(**data)
 
 
-class SongSearchSchema(Schema):
-    """歌曲搜索结果 Schema"""
-    songs = fields.List(fields.Nested(NestedSongSchema), required=True)
-
+class SearchSchema(Schema):
+    """搜索结果 Schema"""
+    songs = fields.List(fields.Nested(NestedSongSchema))
+    albums = fields.List(fields.Nested(AlbumSchema))
+    artists = fields.List(fields.Nested(ArtistSchema))
+    playlists = fields.List(fields.Nested(PlaylistSchema), load_from='collects')
     @post_load
     def create_model(self, data):
         return XSearchModel(**data)
