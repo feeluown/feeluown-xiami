@@ -103,7 +103,7 @@ class TestXiamiModel(TestCase):
 
     @patch.object(API, 'search', return_value=data_search)
     def test_search(self, mock_search):
-        s_result = provider.search('xx')
+        s_result = provider.search('xx', type_='song')
         songs = s_result.songs
         song = songs[0]
         self.assertEqual(song.identifier, 1769400313)

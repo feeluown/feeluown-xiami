@@ -139,7 +139,7 @@ class XSongModel(SongModel, XBaseModel):
     # multi quality support
 
     def list_quality(self):
-        return list(self.q_media_mapping.keys())
+        return list((self.q_media_mapping or {}).keys())
 
     def get_media(self, quality):
         if self.is_expired:

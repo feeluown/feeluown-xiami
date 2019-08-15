@@ -10,6 +10,8 @@ pip3 install fuo-xiami
 
 注意：master 分支代码需要配合 FeelUOwn master 分支代码才可以使用。
 
+修改代码之后，在本地运行 `pytest`，确保能通过单元测试。
+
 ## changelog
 ### 0.1.3 (WIP)
 - 支持获取播放列表全部的歌曲 [@cyliuu] [@cosven]
