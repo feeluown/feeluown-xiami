@@ -160,6 +160,7 @@ class XAlbumModel(AlbumModel, XBaseModel):
 class XArtistModel(ArtistModel, XBaseModel):
     class Meta:
         allow_create_songs_g = True
+        allow_create_albums_g = True
 
     @classmethod
     def get(cls, identifier):
@@ -185,6 +186,9 @@ class XArtistModel(ArtistModel, XBaseModel):
     @songs.setter
     def songs(self, value):
         self._songs = value
+
+    def create_albums_g(self):
+        return create_g(self._api.artist_albums, self.identifier, 'albums', AlbumSchema)
 
 
 class XPlaylistModel(PlaylistModel, XBaseModel):

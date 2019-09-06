@@ -220,6 +220,20 @@ class API(object):
         # TODO: 支持获取更多
         return rv['data']['data']
 
+    def artist_albums(self, artist_id, page=1, page_size=20):
+        action = 'mtop.alimusic.music.albumservice.getartistalbums'
+        payload = {
+            'artistId': artist_id,
+            'pagingVO': {
+                'page': page,
+                'pageSize': page_size
+            }
+        }
+        code, msg, rv = self.request(action, payload)
+        # TODO: 支持获取更多
+        return rv['data']['data']
+
+
     def playlist_detail(self, playlist_id):
         """获取歌单详情
 
