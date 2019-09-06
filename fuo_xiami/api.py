@@ -217,7 +217,6 @@ class API(object):
             }
         }
         code, msg, rv = self.request(action, payload)
-        # TODO: 支持获取更多
         return rv['data']['data']
 
     def artist_albums(self, artist_id, page=1, page_size=20):
@@ -230,7 +229,6 @@ class API(object):
             }
         }
         code, msg, rv = self.request(action, payload)
-        # TODO: 支持获取更多
         return rv['data']['data']
 
 
