@@ -22,13 +22,12 @@ class API(object):
             'Accept-Encoding': 'gzip,deflate,sdch',
             'Accept-Language': 'zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4',
             'Connection': 'keep-alive',
-            'Content-Type': 'application/x-www-form-urlencoded',
+            # 'Content-Type': 'application/x-www-form-urlencoded',
             'Host': 'acs.m.xiami.com',
             'Referer': 'http://acs.m.xiami.com',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3)'
-                          ' AppleWebKit/537.36 (KHTML, like Gecko)'
-                          ' XIAMI-MUSIC/3.1.1 Chrome/56.0.2924.87'
-                          ' Electron/1.6.11 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)' \
+                          ' AppleWebKit/537.36 (KHTML, like Gecko) '\
+                          'Chrome/77.0.3865.120 Safari/537.36'
         }
         self._cookies = {}
         self._app_key = '12574478'  # NOTE: appId 和 app_key 是配对使用
@@ -109,6 +108,9 @@ class API(object):
         elif code == 'FAIL_BIZ_GLOBAL_NEED_LOGIN':
             # TODO: 单独定义一个 Exception
             raise RuntimeError('Xiami api need access token.')
+        elif code == 'FAIL_SYS_WJAS_DENIED':
+            # FAIL_SYS_WJAS_DENIED::请下载升级最新版本APP
+            raise RuntimeError('this api is deprecated')
         else:
             if code != 'SUCCESS':
                 logger.warning('Xiami request failed:: '
