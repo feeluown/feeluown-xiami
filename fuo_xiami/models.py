@@ -122,6 +122,9 @@ class XSongModel(SongModel, XBaseModel):
 
     @property
     def mv(self):
+        # FIXME: currently, api.mv_detail may raise error
+        return None
+
         if self._mv is not None:
             return self._mv
         # 这里可能会先获取一次 mvid
