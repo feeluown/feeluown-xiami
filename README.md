@@ -13,10 +13,13 @@ pip3 install fuo-xiami
 修改代码之后，在本地运行 `pytest`，确保能通过单元测试。
 
 ## changelog
-### 0.1.3 (WIP)
+
+### 0.1.3 (2019-10-28)(注：当前 API 已经几乎不可用了)
+
 - 支持获取播放列表全部的歌曲 [@cyliuu] [@cosven]
 - 支持 Mv [@cyliuu] [@cosven]
 - 支持搜索 artists/albums/playlists [@hjlarry]
+- 适配 feeluown 3.1
 
 ### 0.1.2 (2019-03-18)
 - 修复获取歌手歌曲时进入死循环

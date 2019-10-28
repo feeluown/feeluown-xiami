@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='fuo_xiami',
-    version='0.1.2',
+    version='0.1.3',
     description='feeluown xiami plugin',
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
@@ -25,8 +25,8 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         ),
     install_requires=[
-        'feeluown',
-        'marshmallow',
+        'feeluown>=3.1',
+        'marshmallow<3.0',
         'requests',
     ],
     entry_points={
