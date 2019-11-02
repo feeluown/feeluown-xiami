@@ -8,7 +8,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 site_url = 'http://www.xiami.com'
-api_base_url = 'http://acs.m.xiami.com'
+api_base_url = 'http://h5api.m.xiami.com'
 
 
 def _gen_url(action):
@@ -24,14 +24,14 @@ class API(object):
             'Connection': 'keep-alive',
             # 'Content-Type': 'application/x-www-form-urlencoded',
             'Host': 'acs.m.xiami.com',
-            'Referer': 'http://acs.m.xiami.com',
+            'Referer': 'http://h.xiami.com',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)' \
                           ' AppleWebKit/537.36 (KHTML, like Gecko) '\
                           'Chrome/77.0.3865.120 Safari/537.36'
         }
         self._cookies = {}
-        self._app_key = '12574478'  # NOTE: appId 和 app_key 是配对使用
-        self._req_header = {'appId': 200, 'platformId': 'mac'}
+        self._app_key = '23649156'  # NOTE: appId 和 app_key 是配对使用
+        self._req_header = {'appId': 200, 'platformId': 'h5'}
         self._req_token = None
         self._http = None
 
@@ -55,11 +55,11 @@ class API(object):
         """
         app_key = self._app_key
         t = int(time.time() * 1000)
-        requestStr = {
+        request_str = {
             'header': self._req_header,
             'model': payload
         }
-        data = json.dumps({'requestStr': json.dumps(requestStr)})
+        data = json.dumps({'requestStr': json.dumps(request_str)})
         data_str = '{}&{}&{}&{}'.format(self._req_token, t, app_key, data)
         sign = hashlib.md5(data_str.encode('utf-8')).hexdigest()
         params = {
@@ -71,30 +71,33 @@ class API(object):
         return params
 
     def _fetch_token(self):
-        url = _gen_url('mtop.alimusic.xuser.facade.xiamiuserservice.login')
-        response = self.http.get(url, timeout=1)
-        resp_cookies = response.cookies.get_dict()
-        self._cookies.update(resp_cookies)
-        m_h5_tk = self._cookies['_m_h5_tk']
-        self._req_token, _ = m_h5_tk.split('_')
+        action = 'mtop.alimusic.music.songservice.getsongdetail'
+        token = self.request(action, {'songId': '1'}, need_token=False)
+        self._req_token = token
+        return token
 
-    def request(self, action, payload, timeout=3, retry_on_tokenexpired=True):
+    def request(self, action, payload, timeout=3, need_token=True, retry_on_tokenexpired=True):
         """
         虾米 API 请求流程：
 
-        1. 获取一个 token：随便访问一个网页，服务端会 set cookie。
+        1. 获取一个 token：这里 need_token 为 False 时，意为获取 token，
            根据观察，这个 token 一般是 7 天过期
         2. 对请求签名：见 _sign_payload 方法
         3. 发送请求
         """
-        if self._req_token is None:  # 获取 token
+        if need_token is True and self._req_token is None:  # 获取 token
             self._fetch_token()
 
         url = _gen_url(action)
         params = self._sign_payload(payload)
         response = self.http.get(url, params=params,
-                                 cookies=self._cookies.get('cookie'),
                                  timeout=timeout)
+        # if need_token is False, this request must be used for fetching token
+        if need_token is False:
+            resp_cookies = response.cookies.get_dict()
+            m_h5_tk = resp_cookies['_m_h5_tk']
+            return m_h5_tk.split('_')[0]
+
         rv = response.json()
         code, msg = rv['ret'][0].split('::')
         # app id 和 key 不匹配，一般应该不会出现这种情况
