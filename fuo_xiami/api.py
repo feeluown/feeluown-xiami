@@ -5,6 +5,8 @@ import logging
 
 import requests
 
+from .excs import XiamiIOError
+
 logger = logging.getLogger(__name__)
 
 site_url = 'http://www.xiami.com'
@@ -102,7 +104,7 @@ class API(object):
         code, msg = rv['ret'][0].split('::')
         # app id 和 key 不匹配，一般应该不会出现这种情况
         if code == 'FAIL_SYS_PARAMINVALID_ERROR':
-            raise RuntimeError('Xiami api app id and key not match.')
+            raise XiamiIOError('unexpected error, app id or app key mismatch')
         elif code == 'FAIL_SYS_TOKEN_EXOIRED':  # 刷新 token
             self._fetch_token()
             if retry_on_tokenexpired:
@@ -110,10 +112,10 @@ class API(object):
                                     retry_on_tokenexpired=False)
         elif code == 'FAIL_BIZ_GLOBAL_NEED_LOGIN':
             # TODO: 单独定义一个 Exception
-            raise RuntimeError('Xiami api need access token.')
+            raise XiamiIOError('you need login first')
         elif code == 'FAIL_SYS_WJAS_DENIED':
             # FAIL_SYS_WJAS_DENIED::请下载升级最新版本APP
-            raise RuntimeError('this api is deprecated')
+            raise XiamiIOError('this API is unavailable anymore')
         else:
             if code != 'SUCCESS':
                 logger.warning('Xiami request failed:: '

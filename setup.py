@@ -25,7 +25,7 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
         ),
     install_requires=[
-        'feeluown>=3.1',
+        'feeluown>=3.2.dev0',
         'marshmallow<3.0',
         'requests',
     ],
