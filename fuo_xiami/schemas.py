@@ -2,9 +2,9 @@ import logging
 import time
 from urllib.parse import urlparse
 
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields, post_load, EXCLUDE
 
-from fuocore.media import Media, AudioMeta
+from fuocore.media import Media
 
 
 logger = logging.getLogger(__name__)
@@ -14,22 +14,39 @@ class ArtistSchema(Schema):
     """歌手详情 Schema、歌曲歌手简要信息 Schema
     """
 
-    identifier = fields.Int(load_from='artistId', required=True)
-    name = fields.Str(load_from='artistName', required=True)
-    cover = fields.Str(load_from='artistLogo', missing=None)
-    desc = fields.Str(load_from='description', missing=None)
+    class Meta:
+        unknown = EXCLUDE
+
+    identifier = fields.Int(data_key='artistId', required=True)
+    name = fields.Str(data_key='artistName', required=True)
+    cover = fields.Str(data_key='artistLogo', missing=None)
+    desc = fields.Str(data_key='description', missing=None)
 
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         return XArtistModel(**data)
 
 
 class ListenFileSchema(Schema):
     """Song listenfile"""
+
+    class Meta:
+        unknown = EXCLUDE
+
     quality = fields.Str(required=True)
-    url = fields.Str(load_from='listenFile', required=True)
+    # song_detail and artist_songs api return different listenFile struct,
+    # the struct song_detail api return only contains url field, while
+    # the struct artist_songs api return only contains listenFile field.
+    url = fields.Str(missing=None)
+    url_bak = fields.Str(data_key='listenFile', missing=None)
     format = fields.Str(required=True)
     # expire = fields.Str(required=True)
+
+    @post_load
+    def process_url(self, data, **kwargs):
+        url = data['url'] or data['url_bak']
+        data['url'] = url
+        return data
 
     @classmethod
     def to_q_media_mapping(cls, lfiles):
@@ -69,27 +86,33 @@ class AlbumSchema(Schema):
     >>> album.identifier
     2100387382
     """
-    identifier = fields.Int(load_from='albumId', required=True)
-    name = fields.Str(load_from='albumName', required=True)
-    cover = fields.Str(load_from='albumLogo', required=True)
+    class Meta:
+        unknown = EXCLUDE
+
+    identifier = fields.Int(data_key='albumId', required=True)
+    name = fields.Str(data_key='albumName', required=True)
+    cover = fields.Str(data_key='albumLogo', required=True)
 
     songs = fields.List(fields.Nested('NestedSongSchema'))
-    artists = fields.List(fields.Nested(ArtistSchema), load_from='artists')
-    desc = fields.Str(load_from='description')
+    artists = fields.List(fields.Nested(ArtistSchema), data_key='artists')
+    desc = fields.Str(data_key='description')
 
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         return XAlbumModel(**data)
 
 
 class MvSchema(Schema):
-    identifier = fields.Str(requried=True, load_from='mvId')
-    name = fields.Str(requried=True, load_from='title')
-    cover = fields.Str(requried=True, load_from='mvCover')
-    media = fields.Str(requried=True, load_from='mp4Url')
+    class Meta:
+        unknown = EXCLUDE
+
+    identifier = fields.Str(requried=True, data_key='mvId')
+    name = fields.Str(requried=True, data_key='title')
+    cover = fields.Str(requried=True, data_key='mvCover')
+    media = fields.Str(requried=True, data_key='mp4Url')
 
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         return XMvModel(**data)
 
 
@@ -104,27 +127,30 @@ class SongSchema(Schema):
     >>> song.url
     ''
     """
-    identifier = fields.Int(load_from='songId', required=True)
-    mvid = fields.Str(requried=True, load_from='mvId')
-    title = fields.Str(load_from='songName', required=True)
-    # FIXME: 有的歌曲没有 length 字段
-    duration = fields.Str(load_from='length', missing='0')
+    class Meta:
+        unknown = EXCLUDE
 
-    url = fields.Str(load_from='listenFile', missing='')
+    identifier = fields.Int(data_key='songId', required=True)
+    mvid = fields.Str(requried=True, data_key='mvId')
+    title = fields.Str(data_key='songName', required=True)
+    # FIXME: 有的歌曲没有 length 字段
+    duration = fields.Str(data_key='length', missing='0')
+
+    url = fields.Str(data_key='listenFile', missing='')
     files = fields.List(
-        fields.Nested(ListenFileSchema), load_from='listenFiles', missing=[])
+        fields.Nested(ListenFileSchema), data_key='listenFiles', missing=[])
 
     # XXX: 这里暂时用 singerVOs 来表示歌曲的 artist，即使虾米接口中
     # 也会包含歌曲 artistVOs 信息
     artists = fields.List(
-            fields.Nested(ArtistSchema), load_from='singerVOs', required=True)
+            fields.Nested(ArtistSchema), data_key='singerVOs', required=True)
 
-    album_id = fields.Int(load_from='albumId', required=True)
-    album_name = fields.Str(load_from='albumName', required=True)
-    album_cover = fields.Str(load_from='albumLogo', required=True)
+    album_id = fields.Int(data_key='albumId', required=True)
+    album_name = fields.Str(data_key='albumName', required=True)
+    album_cover = fields.Str(data_key='albumLogo', required=True)
 
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         album = XAlbumModel(identifier=data['album_id'],
                             name=data['album_name'],
                             cover=data['album_cover'])
@@ -155,8 +181,11 @@ class NestedSongSchema(SongSchema):
     search 接口得到的 Song 没有 listenFile 字段，但是可能会有 listenFiles 字段，
     有的话，取 listenFiles 中最高质量的播放链接作为音乐的 url。
     """
+    class Meta:
+        unknown = EXCLUDE
+
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         song = super().create_model(data)
         files = data['files']
         if files:
@@ -175,36 +204,45 @@ class PlaylistSchema(Schema):
     >>> len(playlist.songs)
     100
     """
-    identifier = fields.Str(load_from='listId', required=True)
-    uid = fields.Int(load_from='userId', required=True)
-    name = fields.Str(load_from='collectName', required=True)
-    cover = fields.Str(load_from='collectLogo', required=True)
+    class Meta:
+        unknown = EXCLUDE
+
+    identifier = fields.Str(data_key='listId', required=True)
+    uid = fields.Int(data_key='userId', required=True)
+    name = fields.Str(data_key='collectName', required=True)
+    cover = fields.Str(data_key='collectLogo', required=True)
     songs = fields.List(fields.Nested(NestedSongSchema), missing=None)
-    desc = fields.Str(load_from='description', missing=None)
+    desc = fields.Str(data_key='description', missing=None)
 
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         return XPlaylistModel(**data)
 
 
 class SearchSchema(Schema):
     """搜索结果 Schema"""
+    class Meta:
+        unknown = EXCLUDE
+
     songs = fields.List(fields.Nested(NestedSongSchema))
     albums = fields.List(fields.Nested(AlbumSchema))
     artists = fields.List(fields.Nested(ArtistSchema))
-    playlists = fields.List(fields.Nested(PlaylistSchema), load_from='collects')
+    playlists = fields.List(fields.Nested(PlaylistSchema), data_key='collects')
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         return XSearchModel(**data)
 
 
 class UserSchema(Schema):
-    identifier = fields.Int(load_from='userId')
-    name = fields.Str(load_from='nickName')
-    access_token = fields.Str(load_from='accessToken')
+    class Meta:
+        unknown = EXCLUDE
+
+    identifier = fields.Int(data_key='userId')
+    name = fields.Str(data_key='nickName')
+    access_token = fields.Str(data_key='accessToken')
 
     @post_load
-    def create_model(self, data):
+    def create_model(self, data, **kwargs):
         return XUserModel(**data)
 
 

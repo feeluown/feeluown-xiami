@@ -29,8 +29,8 @@ class XBaseModel(BaseModel):
 
 
 def _deserialize(data, schema_cls):
-    schema = schema_cls(strict=True)
-    obj, _ = schema.load(data)
+    schema = schema_cls()
+    obj = schema.load(data)
     return obj
 
 

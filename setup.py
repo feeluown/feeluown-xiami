@@ -26,7 +26,7 @@ setup(
         ),
     install_requires=[
         'feeluown>=3.2.dev0',
-        'marshmallow<3.0',
+        'marshmallow>=3.0',
         'requests',
     ],
     entry_points={
