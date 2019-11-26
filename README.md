@@ -1,7 +1,7 @@
 # feeluown 虾米音乐插件
 
 [![Build Status](https://travis-ci.com/feeluown/feeluown-xiami.svg?branch=master)](https://travis-ci.com/feeluown/feeluown-xiami)
-[![PyPI](https://img.shields.io/pypi/v/fuo_local.svg)](https://pypi.python.org/pypi/fuo-local)
+[![PyPI](https://img.shields.io/pypi/v/fuo_xiami.svg)](https://pypi.python.org/pypi/fuo-xiami)
 [![Coverage Status](https://coveralls.io/repos/github/feeluown/feeluown-xiami/badge.svg?branch=master)](https://coveralls.io/github/feeluown/feeluown-xiami?branch=master)
 
 ## 安装
