@@ -8,7 +8,7 @@ lint:
 unittest: pytest
 
 pytest:
-	pytest
+	pytest --cov-report --cov=fuo_xiami
 
 test: lint unittest
 
