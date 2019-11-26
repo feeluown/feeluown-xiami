@@ -56,7 +56,7 @@ class ListenFileSchema(Schema):
                            'h': 'hq',
                            'l': 'sq',
                            'f': 'lq',
-                           'e': 'lq',}
+                           'e': 'lq'}
             for lfile in filter(lambda lfile: lfile['url'], lfiles):
                 url = lfile['url']
                 quality = lfile['quality']
@@ -64,7 +64,7 @@ class ListenFileSchema(Schema):
                 # url example: http://m720.xiami.net/...
                 try:
                     bitrate = int(urlparse(url).netloc.split('.')[0][1:])
-                except:
+                except:  # noqa
                     bitrate = None
                 if quality not in q_q_mapping:
                     field = 'lq'

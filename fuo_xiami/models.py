@@ -42,6 +42,7 @@ def create_g(func, identifier, field='songs', schema=None):
     # 但 playlist_detail_v2 接口返回的数据没有 total 字段，
     # 这里取 pagingVO 结构体中的 count 字段值作为 total
     total = int(data['pagingVO']['count'])
+
     def g():
         nonlocal data
         if data is None:

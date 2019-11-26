@@ -78,7 +78,8 @@ class API(object):
         self._req_token = token
         return token
 
-    def request(self, action, payload, timeout=3, need_token=True, retry_on_tokenexpired=True):
+    def request(self, action, payload, timeout=3, need_token=True,
+                retry_on_tokenexpired=True):
         """
         虾米 API 请求流程：
 
@@ -237,7 +238,6 @@ class API(object):
         }
         code, msg, rv = self.request(action, payload)
         return rv['data']['data']
-
 
     def playlist_detail(self, playlist_id):
         """获取歌单详情
