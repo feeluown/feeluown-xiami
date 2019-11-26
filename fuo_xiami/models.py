@@ -302,8 +302,7 @@ def search(keyword, **kwargs):
         SearchType.pl: 1000,
     }
     data = provider.api.search(keyword, type_=type_type_map[type_])
-    schema = SearchSchema(strict=True)
-    result, _ = schema.load(data)
+    result = _deserialize(data, SearchSchema)
     result.q = keyword
     return result
 
