@@ -18,7 +18,13 @@ pip3 install fuo-xiami
 
 ## changelog
 
-### 0.1.3 (2019-10-28)(注：当前 API 已经几乎不可用了)
+### 0.2 (2019-11-27)(注：当前歌单列表接口不可用)
+
+- 使用 marshmallow>=3.0
+- 加入 Makefile 方便运行测试
+- 接入 travis 持续集成
+
+### 0.1.3 (2019-10-28)(注：当前歌单列表接口不可用)
 
 - 支持获取播放列表全部的歌曲 [@cyliuu] [@cosven]
 - 支持 Mv [@cyliuu] [@cosven]
