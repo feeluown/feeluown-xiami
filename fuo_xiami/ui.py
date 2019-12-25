@@ -11,7 +11,9 @@ from PyQt5.QtWidgets import (
 )
 
 from .api import api
+from .excs import XiamiIOError
 from .schemas import UserSchema
+from .models import _deserialize  # noqa
 
 logger = logging.getLogger(__name__)
 
@@ -62,13 +64,16 @@ class LoginDialog(QDialog):
         username = self.username_input.text()
         password = self.pw_input.text()
         pw_md5digest = hashlib.md5(password.encode('utf-8')).hexdigest()
-        rv = api.login(username, pw_md5digest)
-        code, msg = rv['ret'][0].split('::')
-        is_success = code == 'SUCCESS'
-        self.show_msg(msg, error=(not is_success))
-        if is_success:
-            data = rv['data']['data']
-            schema = UserSchema(strict=True)
-            user, _ = schema.load(data)
-            self.login_success.emit(user)
-            self.close()
+        try:
+            rv = api.login(username, pw_md5digest)
+        except XiamiIOError as e:
+            self.show_msg(str(e), error=True)
+        else:
+            code, msg = rv['ret'][0].split('::')
+            is_success = code == 'SUCCESS'
+            self.show_msg(msg, error=(not is_success))
+            if is_success:
+                data = rv['data']['data']
+                user = _deserialize(data, UserSchema)
+                self.login_success.emit(user)
+                self.close()
