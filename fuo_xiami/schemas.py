@@ -52,7 +52,8 @@ class ListenFileSchema(Schema):
     def to_q_media_mapping(cls, lfiles):
         q_media_mapping = {}
         if lfiles:
-            q_q_mapping = {'s': 'shq',
+            q_q_mapping = {'m': 'shq',  # for example: flac
+                           's': 'shq',
                            'h': 'hq',
                            'l': 'sq',
                            'f': 'lq',
@@ -68,7 +69,7 @@ class ListenFileSchema(Schema):
                     bitrate = None
                 if quality not in q_q_mapping:
                     field = 'lq'
-                    logger.warning('unknown quality {}'.format(quality))
+                    logger.warning('unknown quality {}, url {}'.format(quality, url))
                 else:
                     field = q_q_mapping[quality]
                 q_media_mapping[field] = Media(url, format=format, bitrate=bitrate)

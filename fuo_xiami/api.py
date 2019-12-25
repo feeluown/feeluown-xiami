@@ -25,7 +25,6 @@ class API(object):
             'Accept-Language': 'zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4',
             'Connection': 'keep-alive',
             # 'Content-Type': 'application/x-www-form-urlencoded',
-            'Host': 'acs.m.xiami.com',
             'Referer': 'http://h.xiami.com',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)' \
                           ' AppleWebKit/537.36 (KHTML, like Gecko) '\
