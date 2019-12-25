@@ -18,6 +18,10 @@ pip3 install fuo-xiami
 
 ## changelog
 
+### 0.2.1 (2019-12-26)(注：当前歌单列表接口不可用)
+
+- 修复“登录”会导致程序 crash 的 bug，见 issue #5
+
 ### 0.2 (2019-11-27)(注：当前歌单列表接口不可用)
 
 - 使用 marshmallow>=3.0
