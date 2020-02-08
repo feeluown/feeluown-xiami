@@ -107,7 +107,6 @@ class Xiami(object):
             mymusic_fav_item.clicked.connect(self.show_fav_songs)
             self._app.mymusic_uimgr.add_item(mymusic_fav_item)
 
-
     def activate_fm(self):
         self._app.fm.activate(self.fetch_fm_songs)
 
