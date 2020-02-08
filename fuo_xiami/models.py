@@ -293,6 +293,14 @@ class XUserModel(UserModel, XBaseModel):
     def remove_from_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'del')
 
+    def get_radio(self):
+        songs_data = self._api.personal_fm()
+        if songs_data is None:
+            logger.error('data should not be None')
+            return None
+        return [_deserialize(song_data, SongSchema)
+                for song_data in songs_data]
+
 
 def search(keyword, **kwargs):
     type_ = SearchType.parse(kwargs['type_'])

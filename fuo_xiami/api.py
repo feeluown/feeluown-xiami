@@ -344,5 +344,24 @@ class API(object):
         code, msg, rv = self.request(action, payload)
         return rv['data']['data']['success'] == 'true'
 
+    # 私人FM 每日推荐歌曲 每日推荐歌单
+    def personal_fm(self):
+        action = 'mtop.alimusic.music.radio.getradiosongs'
+        payload = {
+            'radioType': 1
+        }
+        code, msg, rv = self.request(action, payload)
+        return rv['data']['data']['list']
+
+    def recommend_songs(self):
+        action = 'mtop.alimusic.recommend.songservice.getdailysongs'
+        code, msg, rv = self.request(action, dict())
+        return rv['data']['data']['songs']
+
+    def recommend_playlists(self):
+        action = 'mtop.alimusic.music.list.collectservice.getcollects'
+        code, msg, rv = self.request(action, dict())
+        return rv['data']['data']['collects']
+
 
 api = API()
