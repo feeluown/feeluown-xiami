@@ -4,6 +4,7 @@ import json
 import logging
 import os
 
+from .excs import XiamiIOError
 from .provider import provider
 from .models import XUserModel
 
@@ -99,9 +100,21 @@ class Xiami(object):
             self._app.ui.left_panel.playlists_con.show()
             self._app.mymusic_uimgr.clear()
 
+            mymusic_fm_item = self._app.mymusic_uimgr.create_item('📻 私人 FM')
+            mymusic_fm_item.clicked.connect(self.activate_fm)
+            self._app.mymusic_uimgr.add_item(mymusic_fm_item)
             mymusic_fav_item = self._app.mymusic_uimgr.create_item('♥ 我的收藏')
             mymusic_fav_item.clicked.connect(self.show_fav_songs)
             self._app.mymusic_uimgr.add_item(mymusic_fav_item)
+
+    def activate_fm(self):
+        self._app.fm.activate(self.fetch_fm_songs)
+
+    def fetch_fm_songs(self, *args, **kwargs):
+        songs = provider._user.get_radio()  # noqa
+        if songs is None:
+            raise XiamiIOError('unknown error: get no radio songs')
+        return songs
 
 
 def enable(app):
