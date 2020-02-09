@@ -278,6 +278,21 @@ class XUserModel(UserModel, XBaseModel):
     @fav_playlists.setter
     def fav_playlists(self, value):
         self._fav_playlists = value
+        
+    @property
+    def rec_playlists(self):
+        if self._rec_playlists is None:
+            playlists_data = self._api.recommend_playlists()
+            rec_playlists = []
+            for playlist_data in playlists_data:
+                playlist = _deserialize(playlist_data, PlaylistSchema)
+                rec_playlists.append(playlist)
+            self._rec_playlists = rec_playlists
+        return self._rec_playlists
+
+    @rec_playlists.setter
+    def rec_playlists(self, value):
+        self._rec_playlists = value
 
     @property
     def fav_songs(self):
@@ -292,6 +307,16 @@ class XUserModel(UserModel, XBaseModel):
 
     def remove_from_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'del')
+    
+    @property
+    def rec_songs(self):
+        songs_data = self._api.recommend_songs()
+        return [_deserialize(song_data, SongSchema)
+                for song_data in songs_data]
+
+    @rec_songs.setter
+    def rec_songs(self, value):
+        pass
 
     def get_radio(self):
         songs_data = self._api.personal_fm()
