@@ -1,6 +1,7 @@
 import logging
 import time
 
+from fuocore.models import cached_field
 from fuocore.models import (
     BaseModel,
     SongModel,
@@ -245,78 +246,52 @@ class XUserModel(UserModel, XBaseModel):
             return None
         return _deserialize(user_data, UserSchema)
 
-    @property
+    @cached_field()
     def playlists(self):
         """获取用户创建的歌单
 
         如果不是用户本人，则不能获取用户默认精选集
         """
-        if self._playlists is None:
-            playlists_data = self._api.user_playlists(self.identifier)
-            playlists = []
-            for playlist_data in playlists_data:
-                playlist = _deserialize(playlist_data, PlaylistSchema)
-                playlists.append(playlist)
-            self._playlists = playlists
-        return self._playlists
+        playlists_data = self._api.user_playlists(self.identifier)
+        playlists = []
+        for playlist_data in playlists_data:
+            playlist = _deserialize(playlist_data, PlaylistSchema)
+            playlists.append(playlist)
+        return playlists
 
-    @playlists.setter
-    def playlists(self, value):
-        self._playlists = value  # pylint: disable=all
-
-    @property
+    @cached_field()
     def fav_playlists(self):
-        if self._fav_playlists is None:
-            playlists_data = self._api.user_favorite_playlists(self.identifier)
-            fav_playlists = []
-            for playlist_data in playlists_data:
-                playlist = _deserialize(playlist_data, PlaylistSchema)
-                fav_playlists.append(playlist)
-            self._fav_playlists = fav_playlists
-        return self._fav_playlists
+        playlists_data = self._api.user_favorite_playlists(self.identifier)
+        fav_playlists = []
+        for playlist_data in playlists_data:
+            playlist = _deserialize(playlist_data, PlaylistSchema)
+            fav_playlists.append(playlist)
+        return fav_playlists
 
-    @fav_playlists.setter
-    def fav_playlists(self, value):
-        self._fav_playlists = value
-        
-    @property
+    @cached_field()
     def rec_playlists(self):
-        if self._rec_playlists is None:
-            playlists_data = self._api.recommend_playlists()
-            rec_playlists = []
-            for playlist_data in playlists_data:
-                playlist = _deserialize(playlist_data, PlaylistSchema)
-                rec_playlists.append(playlist)
-            self._rec_playlists = rec_playlists
-        return self._rec_playlists
+        playlists_data = self._api.recommend_playlists()
+        rec_playlists = []
+        for playlist_data in playlists_data:
+            playlist = _deserialize(playlist_data, PlaylistSchema)
+            rec_playlists.append(playlist)
+        return rec_playlists
 
-    @rec_playlists.setter
-    def rec_playlists(self, value):
-        self._rec_playlists = value
-
-    @property
+    @cached_field()
     def fav_songs(self):
         return create_g(self._api.user_favorite_songs, self.identifier)
-
-    @fav_songs.setter
-    def fav_songs(self, value):
-        pass
 
     def add_to_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'add')
 
     def remove_from_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'del')
-    
-    @property
+
+    @cached_field()
     def rec_songs(self):
         songs_data = self._api.recommend_songs()
         return [_deserialize(song_data, SongSchema)
                 for song_data in songs_data]
-
-    @rec_songs.setter
-    def rec_songs(self, value):
-        pass
 
     def get_radio(self):
         songs_data = self._api.personal_fm()
