@@ -75,6 +75,9 @@ class Xiami(object):
     def show_fav_songs(self):
         self._app.ui.songs_table_container.show_songs(songs_g=self._user.fav_songs)
 
+    def show_rec_songs(self):
+        self._app.ui.songs_table_container.show_songs(self._user.rec_songs)
+
     def show_provider(self):
         """展示虾米首页
 
@@ -87,6 +90,7 @@ class Xiami(object):
             if user is None:
                 self.show_login_dialog()
             else:
+                # FIXME: 电台、日推等与accessToken强相关，这类歌曲可能与官方客户端不一致
                 self.bind_user(user, dump=False)
         if self._user is not None:
             # 显示用户名
@@ -95,6 +99,7 @@ class Xiami(object):
             self._app.pl_uimgr.clear()
             self._app.pl_uimgr.add(self._user.playlists)
             self._app.pl_uimgr.add(self._user.fav_playlists, is_fav=True)
+            # self._app.pl_uimgr.add(self._user.rec_playlists)
             # 显示用户收藏的歌曲
             self._app.ui.left_panel.my_music_con.show()
             self._app.ui.left_panel.playlists_con.show()
@@ -103,6 +108,9 @@ class Xiami(object):
             mymusic_fm_item = self._app.mymusic_uimgr.create_item('📻 私人 FM')
             mymusic_fm_item.clicked.connect(self.activate_fm)
             self._app.mymusic_uimgr.add_item(mymusic_fm_item)
+            mymusic_rec_item = self._app.mymusic_uimgr.create_item('📅 每日推荐')
+            mymusic_rec_item.clicked.connect(self.show_rec_songs)
+            self._app.mymusic_uimgr.add_item(mymusic_rec_item)
             mymusic_fav_item = self._app.mymusic_uimgr.create_item('♥ 我的收藏')
             mymusic_fav_item.clicked.connect(self.show_fav_songs)
             self._app.mymusic_uimgr.add_item(mymusic_fav_item)
