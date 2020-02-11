@@ -75,6 +75,9 @@ class Xiami(object):
     def show_fav_songs(self):
         self._app.ui.songs_table_container.show_songs(songs_g=self._user.fav_songs)
 
+    def show_fav_albums(self):
+        self._app.ui.songs_table_container.show_albums_coll(self._user.fav_albums)
+        
     def show_rec_songs(self):
         self._app.ui.songs_table_container.show_songs(self._user.rec_songs)
 
@@ -114,6 +117,9 @@ class Xiami(object):
             mymusic_fav_item = self._app.mymusic_uimgr.create_item('♥ 我的收藏')
             mymusic_fav_item.clicked.connect(self.show_fav_songs)
             self._app.mymusic_uimgr.add_item(mymusic_fav_item)
+            mymusic_albums_item = self._app.mymusic_uimgr.create_item('♥ 我的专辑')
+            mymusic_albums_item.clicked.connect(self.show_fav_albums)
+            self._app.mymusic_uimgr.add_item(mymusic_albums_item)
 
     def activate_fm(self):
         self._app.fm.activate(self.fetch_fm_songs)

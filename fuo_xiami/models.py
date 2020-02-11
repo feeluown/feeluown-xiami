@@ -277,7 +277,7 @@ class XUserModel(UserModel, XBaseModel):
             rec_playlists.append(playlist)
         return rec_playlists
 
-    @cached_field()
+    @property
     def fav_songs(self):
         return create_g(self._api.user_favorite_songs, self.identifier)
 
@@ -286,6 +286,22 @@ class XUserModel(UserModel, XBaseModel):
 
     def remove_from_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'del')
+
+    @property
+    def fav_artists(self):
+        return create_g(self._api.user_favorite_artists, self.identifier, 'artists', ArtistSchema)
+
+    @fav_artists.setter
+    def fav_artists(self, value):
+        pass
+
+    @property
+    def fav_albums(self):
+        return create_g(self._api.user_favorite_albums, self.identifier, 'albums', AlbumSchema)
+
+    @fav_albums.setter
+    def fav_albums(self, value):
+        pass
 
     @cached_field()
     def rec_songs(self):

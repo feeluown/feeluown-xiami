@@ -344,6 +344,40 @@ class API(object):
         code, msg, rv = self.request(action, payload)
         return rv['data']['data']['success'] == 'true'
 
+    def user_favorite_artists(self, user_id, page=1, page_size=50):
+        """获取用户收藏的歌手
+
+        NOTE: 当设置 limit 大于 200 时，虾米服务端好像会忽略这个设置，将 limit 设为 20
+        """
+        action = 'mtop.alimusic.fav.artistfavoriteservice.getfavoriteartists'
+        payload = {
+            'userId': user_id,
+            'pagingVO': {
+                'page': page,
+                'pageSize': page_size
+            }
+        }
+        code, msg, rv = self.request(action, payload)
+        # TODO: 支持获取更多
+        return rv['data']['data']
+
+    def user_favorite_albums(self, user_id, page=1, page_size=50):
+        """获取用户收藏的专辑
+
+        NOTE: 当设置 limit 大于 200 时，虾米服务端好像会忽略这个设置，将 limit 设为 20
+        """
+        action = 'mtop.alimusic.fav.albumfavoriteservice.getfavoritealbums'
+        payload = {
+            'userId': user_id,
+            'pagingVO': {
+                'page': page,
+                'pageSize': page_size
+            }
+        }
+        code, msg, rv = self.request(action, payload)
+        # TODO: 支持获取更多
+        return rv['data']['data']
+
     # 私人FM 每日推荐歌曲 每日推荐歌单
     def personal_fm(self):
         action = 'mtop.alimusic.music.radio.getradiosongs'
