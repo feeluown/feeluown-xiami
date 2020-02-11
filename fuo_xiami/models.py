@@ -60,6 +60,7 @@ def create_g(func, identifier, field='songs', schema=None):
                     yield _deserialize(obj_data, schema)
                 page += 1
                 data = func(identifier, page, page_size)
+    # FIXME: use SequentialRandomReader instead of GeneratorProxy
     return GeneratorProxy(g(), total)
 
 
@@ -280,6 +281,9 @@ class XUserModel(UserModel, XBaseModel):
     @property
     def fav_songs(self):
         return create_g(self._api.user_favorite_songs, self.identifier)
+
+    @fav_songs.setter
+    def fav_songs(self, _): pass
 
     def add_to_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'add')
