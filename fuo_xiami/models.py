@@ -281,10 +281,6 @@ class XUserModel(UserModel, XBaseModel):
     def fav_songs(self):
         return create_g(self._api.user_favorite_songs, self.identifier)
 
-    @fav_songs.setter
-    def fav_songs(self, value):
-        pass
-
     def add_to_fav_songs(self, song_id):
         return self._api.update_favorite_song(song_id, 'add')
 
