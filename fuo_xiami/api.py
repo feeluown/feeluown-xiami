@@ -101,7 +101,14 @@ class API(object):
             return m_h5_tk.split('_')[0]
 
         rv = response.json()
-        code, msg = rv['ret'][0].split('::')
+        ret0 = rv['ret'][0].split('::')
+
+        if len(ret0) > 1:
+            code, msg = ret0
+        else:
+            # for exmample:
+            # ['FAIL_SYS_USER_VALIDATE', 'RGV587_ERROR::SM::哎哟喂,被挤爆啦,请稍后重试']
+            code, msg = ret0, ''
         # app id 和 key 不匹配，一般应该不会出现这种情况
         if code == 'FAIL_SYS_PARAMINVALID_ERROR':
             raise XiamiIOError('unexpected error, app id or app key mismatch')
