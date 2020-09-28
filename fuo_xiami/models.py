@@ -125,9 +125,6 @@ class XSongModel(SongModel, XBaseModel):
 
     @property
     def mv(self):
-        # FIXME: currently, api.mv_detail may raise error
-        return None
-
         if self._mv is not None:
             return self._mv
         # 这里可能会先获取一次 mvid
@@ -239,6 +236,8 @@ class XUserModel(UserModel, XBaseModel):
         allow_fav_songs_add = True
         allow_fav_songs_remove = True
         fields = ('access_token', )
+        fields_no_get = ('fav_songs', 'fav_albums', 'fav_artists',
+                         'rec_songs', 'rec_playlists')
 
     @classmethod
     def get(cls, identifier):
@@ -296,16 +295,14 @@ class XUserModel(UserModel, XBaseModel):
         return create_g(self._api.user_favorite_artists, self.identifier, 'artists', ArtistSchema)
 
     @fav_artists.setter
-    def fav_artists(self, value):
-        pass
+    def fav_artists(self, _): pass
 
     @property
     def fav_albums(self):
         return create_g(self._api.user_favorite_albums, self.identifier, 'albums', AlbumSchema)
 
     @fav_albums.setter
-    def fav_albums(self, value):
-        pass
+    def fav_albums(self, _): pass
 
     @cached_field()
     def rec_songs(self):
