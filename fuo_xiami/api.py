@@ -10,7 +10,7 @@ from .excs import XiamiIOError
 logger = logging.getLogger(__name__)
 
 site_url = 'http://www.xiami.com'
-api_base_url = 'http://h5api.m.xiami.com'
+api_base_url = 'https://acs.m.xiami.com'
 
 
 def _gen_url(action):
