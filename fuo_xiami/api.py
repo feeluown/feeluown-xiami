@@ -9,12 +9,14 @@ from .excs import XiamiIOError
 
 logger = logging.getLogger(__name__)
 
-site_url = 'http://www.xiami.com'
-api_base_url = 'http://h5api.m.xiami.com'
+BASE_URL_H5 = 'http://h5api.m.xiami.com'
+BASE_URL_ACS = 'https://acs.m.xiami.com'
 
 
-def _gen_url(action):
-    return api_base_url + '/h5/{}/1.0/'.format(action)
+def _gen_url(action, base_url=None):
+    if base_url is None:
+        base_url = BASE_URL_H5
+    return base_url + '/h5/{}/1.0/'.format(action)
 
 
 class API(object):
@@ -77,8 +79,9 @@ class API(object):
         self._req_token = token
         return token
 
-    def request(self, action, payload, timeout=3, need_token=True,
-                retry_on_tokenexpired=True):
+    def request(self, action, payload, timeout=3,
+                need_token=True, retry_on_tokenexpired=True,
+                base_url=None):
         """
         虾米 API 请求流程：
 
@@ -90,7 +93,7 @@ class API(object):
         if need_token is True and self._req_token is None:  # 获取 token
             self._fetch_token()
 
-        url = _gen_url(action)
+        url = _gen_url(action, base_url=base_url)
         params = self._sign_payload(payload)
         response = self.http.get(url, params=params,
                                  timeout=timeout)
@@ -163,7 +166,7 @@ class API(object):
                 'pageSize': limit
             }
         }
-        _, _, rv = self.request(action, payload)
+        _, _, rv = self.request(action, payload, base_url=BASE_URL_ACS)
         return rv['data']['data']
 
     def song_detail(self, song_id):
