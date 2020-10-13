@@ -80,7 +80,7 @@ class Xiami(object):
 
     def show_fav_artists(self):
         self._app.ui.songs_table_container.show_artists_coll(self._user.fav_artists)
-        
+
     def show_rec_songs(self):
         self._app.ui.songs_table_container.show_songs(self._user.rec_songs)
 

@@ -229,6 +229,7 @@ class SearchSchema(Schema):
     albums = fields.List(fields.Nested(AlbumSchema))
     artists = fields.List(fields.Nested(ArtistSchema))
     playlists = fields.List(fields.Nested(PlaylistSchema), data_key='collects')
+
     @post_load
     def create_model(self, data, **kwargs):
         return XSearchModel(**data)
@@ -247,7 +248,7 @@ class UserSchema(Schema):
         return XUserModel(**data)
 
 
-from .models import (
+from .models import (  # noqa
     XAlbumModel,
     XArtistModel,
     XMvModel,
@@ -255,4 +256,4 @@ from .models import (
     XSongModel,
     XSearchModel,
     XUserModel,
-)  # noqa
+)

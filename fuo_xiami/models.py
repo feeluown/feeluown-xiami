@@ -292,14 +292,16 @@ class XUserModel(UserModel, XBaseModel):
 
     @property
     def fav_artists(self):
-        return create_g(self._api.user_favorite_artists, self.identifier, 'artists', ArtistSchema)
+        return create_g(self._api.user_favorite_artists,
+                        self.identifier, 'artists', ArtistSchema)
 
     @fav_artists.setter
     def fav_artists(self, _): pass
 
     @property
     def fav_albums(self):
-        return create_g(self._api.user_favorite_albums, self.identifier, 'albums', AlbumSchema)
+        return create_g(self._api.user_favorite_albums,
+                        self.identifier, 'albums', AlbumSchema)
 
     @fav_albums.setter
     def fav_albums(self, _): pass
@@ -333,7 +335,7 @@ def search(keyword, **kwargs):
     return result
 
 
-from .schemas import (
+from .schemas import (  # noqa
     AlbumSchema,
     ArtistSchema,
     MvSchema,
@@ -342,4 +344,4 @@ from .schemas import (
     SongSchema,
     SearchSchema,
     UserSchema,
-)  # noqa
+)
