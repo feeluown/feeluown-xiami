@@ -400,5 +400,18 @@ class API(object):
         code, msg, rv = self.request(action, dict())
         return rv['data']['data']['collects']
 
+    def recent_song_playlog(self, user_id, page=1, page_size=200):
+        action = 'mtop.alimusic.playlog.facade.playlogservice.getrecentsongplaylog'
+        payload = {
+            'userId': user_id,
+            'fullView': 1,
+            'pagingVO': {
+                'page': page,
+                'pageSize': page_size,
+            }
+        }
+        code, msg, rv = self.request(action, payload)
+        return rv['data']['data']
+
 
 api = API()
