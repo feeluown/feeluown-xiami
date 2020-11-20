@@ -107,10 +107,10 @@ class MvSchema(Schema):
     class Meta:
         unknown = EXCLUDE
 
-    identifier = fields.Str(requried=True, data_key='mvId')
-    name = fields.Str(requried=True, data_key='title')
-    cover = fields.Str(requried=True, data_key='mvCover')
-    media = fields.Str(requried=True, data_key='mp4Url')
+    identifier = fields.Str(required=True, data_key='mvId')
+    name = fields.Str(required=True, data_key='title')
+    cover = fields.Str(required=True, data_key='mvCover')
+    media = fields.Str(required=True, data_key='mp4Url')
 
     @post_load
     def create_model(self, data, **kwargs):
@@ -132,7 +132,7 @@ class SongSchema(Schema):
         unknown = EXCLUDE
 
     identifier = fields.Int(data_key='songId', required=True)
-    mvid = fields.Str(requried=True, data_key='mvId')
+    mvid = fields.Str(required=True, data_key='mvId')
     title = fields.Str(data_key='songName', required=True)
     # FIXME: 有的歌曲没有 length 字段
     duration = fields.Str(data_key='length', missing='0')
